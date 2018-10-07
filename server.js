@@ -63,9 +63,9 @@ const Commands = {
       const chname = ($.msg.channel && $.msg.channel.type !== 'dm') ? $.msg.channel : 'DM'
       console.log(`**REPORT** from ${name($.msg.author)} in ${name(chname)}: ${reason.join(' ')}`)
       if ($.server.deleteReports && $.msg.channel.name) $.msg.delete().catch(() => {})
-      await $.server.moderation.send(`@here **REPORT** from ${$.msg.author} in ${chname}: ${reason.join(' ')}`)
+      await $.server.moderation.send(`@here **REPORT** from ${$.msg.author} in ${chname}: ${reason.join(' ')}`, {split: true})
       if ($.server.deleteReports && $.msg.channel.name) {
-        return sendDM($.msg.author, `Report in ${chname} has been sent to moderators: ${reason.join(' ')}`)
+        return sendDM($.msg.author, `Report in ${chname} has been sent to moderators: ${reason.join(' ')}`, {split: true})
       } else {
         const guild = $.msg.guild || $.server.guild
         return $.msg.react(guild.emojis.find(_ => _.name === 'report'))
@@ -80,9 +80,9 @@ const Commands = {
       const chname = ($.msg.channel && $.msg.channel.type !== 'dm') ? $.msg.channel : 'DM'
       console.log(`Meessage to admins from ${name($.msg.author)} in ${name(chname)}: ${message.join(' ')}`)
       if ($.server.deleteReports && $.msg.channel.name) $.msg.delete().catch(() => {})
-      await $.server.moderation.send(`Message to admins from ${$.msg.author} in ${chname}: ${message.join(' ')}`)
+      await $.server.moderation.send(`Message to admins from ${$.msg.author} in ${chname}: ${message.join(' ')}`, {split: true})
       if ($.server.deleteReports && $.msg.channel.name) {
-        return sendDM($.msg.author, `Mesage to admins in ${chname} has been sent: ${message.join(' ')}`)
+        return sendDM($.msg.author, `Mesage to admins in ${chname} has been sent: ${message.join(' ')}`, {split: true})
       } else {
         return $.msg.react('✅')
       }
@@ -98,7 +98,7 @@ async function clientError (err) {
 
 async function clientGuildMemberAdd (gm) {
   const server = conf.serversById[gm.guild.id]
-  return server.welcome.send(`Welcome to the server ${gm.user}! We are _so_ happy to see you! :heartpulse: Please check out the pinned message in this channel for the why's and whatfors of this server, plus our code of conduct!`)
+  return server.welcome.send(`Welcome to the server ${gm.user}! We are _so_ happy to see you! :heartpulse: Please check out the pinned message in this channel for the why's and whatfors of this server, plus our code of conduct!`, {split: true})
 }
 
 async function clientMessageReactionAdd (mr, user) {
@@ -113,7 +113,7 @@ async function clientMessageReactionAdd (mr, user) {
     const report = `Reporting ${mr.message.author} saying “${mr.message}”`
     console.log(`**EMOJI REPORT** from ${name(user)} in ${name(mr.message.channel)}: ${report}`)
     await mr.remove(user)
-    await server.moderation.send(`@here **EMOJI REPORT** from ${user} in ${mr.message.channel}: ${report}`)
+    await server.moderation.send(`@here **EMOJI REPORT** from ${user} in ${mr.message.channel}: ${report}`, {split: true})
     return Promise.all([
       mr.message.react(reportEmoji),
       sendDM(user, `Report in ${mr.message.channel} has been sent to moderators: ${report}`)
@@ -229,7 +229,7 @@ function name (thing) {
    return name
 }
 
-async function sendDM (user, msg) {
+async function sendDM (user, msg, opts) {
   const dm = user.dmChannel || await user.createDM()
   return dm.send(msg)
 }
