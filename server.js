@@ -12,7 +12,6 @@ const Discord = require('discord.js');
 
 const DEFAULTS = {
   token: null,
-  id: null,
   servers: {},
   serversById: {}
 }
