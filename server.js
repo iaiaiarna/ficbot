@@ -28,14 +28,6 @@ async function main (opts, conffile) {
   client.login(conf.token)
 }
 
-function modChannel (guild) {
-  const channel = guild.channels.find(ch => ch.name === conf.modChannel);
-  // Do nothing if the channel wasn't found on this server
-  if (!channel) return;
-  // Send the message, mentioning the member
-  channel.send(`Welcome to the server, ${member}`);
-}
-
 async function clientReady () {
   console.log(`Logged in as ${client.user.tag}!`);
   client.guilds.forEach(guild => {
