@@ -67,8 +67,7 @@ const Commands = {
       if ($.server.deleteReports && $.msg.channel.name) {
         return sendDM($.msg.author, `Report in ${chname} has been sent to moderators: ${reason.join(' ')}`, {split: true})
       } else {
-        const guild = $.msg.guild || $.server.guild
-        return $.msg.react(guild.emojis.find(_ => _.name === 'report'))
+        return $.msg.react($.server.emoji.report)
       }
     }
   },
@@ -106,16 +105,15 @@ async function clientMessageReactionAdd (mr, user) {
   if (mr.me) return // ignore our own reactions
 
   const server = conf.serversById[mr.message.guild.id]
-  const reportEmoji = server.guild.emojis.find(_ => _.name === 'report')
 
-  if (mr.emoji.id === reportEmoji.id) {
+  if (mr.emoji.id === server.emoji.report.id) {
     const server = conf.serversById[mr.message.guild.id]
     const report = `Reporting ${mr.message.author} saying “${mr.message}”`
     console.log(`**EMOJI REPORT** from ${name(user)} in ${name(mr.message.channel)}: ${report}`)
     await mr.remove(user)
     await server.moderation.send(`@here **EMOJI REPORT** from ${user} in ${mr.message.channel}: ${report}`, {split: true})
     return Promise.all([
-      mr.message.react(reportEmoji),
+      mr.message.react(server.emoji.report),
       sendDM(user, `Report in ${mr.message.channel} has been sent to moderators: ${report}`)
     ])
   }
@@ -199,6 +197,8 @@ async function clientReady () {
       conf.serversById[guild.id] = server
       server.name = guild.name
       server.guild = guild
+      server.emoji = {}
+      server.emoji.report = server.guild.emojis.find(_ => _.name === 'report')
       guild.channels.forEach(ch => {
         if (ch.name === server.channels.moderation) {
           server.moderation = ch
