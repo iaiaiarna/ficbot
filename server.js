@@ -103,13 +103,19 @@ async function clientGuildMemberAdd (gm) {
 
 async function clientMessageReactionAdd (mr, user) {
   if (!mr.message.guild) return // dm
-  const server = conf.serversById[mr.message.guild.id]
+  if (mr.me) return // ignore our own reactions
 
-  const report = `Reporting ${mr.message.author} saying “${mr.message}”`
-  console.log(`**EMOJI REPORT** from ${name(user)} in ${name(mr.message.channel)}: ${report}`)
-  await mr.remove(user)
-  await server.moderation.send(`@here **EMOJI REPORT** from ${user} in ${mr.message.channel}: ${report}`)
-  return sendDM(user, `Report in ${mr.message.channel} has been sent to moderators: ${report}`).catch(() => {})
+  if (mr.emoji.name === 'report') {
+    const server = conf.serversById[mr.message.guild.id]
+    const report = `Reporting ${mr.message.author} saying “${mr.message}”`
+    console.log(`**EMOJI REPORT** from ${name(user)} in ${name(mr.message.channel)}: ${report}`)
+    await mr.remove(user)
+    await server.moderation.send(`@here **EMOJI REPORT** from ${user} in ${mr.message.channel}: ${report}`)
+    return Promise.all([
+      mr.message.react(mr.emoji),
+      sendDM(user, `Report in ${mr.message.channel} has been sent to moderators: ${report}`)
+    ])
+  }
 }
 
 async function clientMessage (msg) {
