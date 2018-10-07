@@ -108,13 +108,19 @@ async function clientMessageReactionAdd (mr, user) {
 
   if (mr.emoji.id === server.emoji.report.id) {
     const server = conf.serversById[mr.message.guild.id]
-    const report = `Reporting ${mr.message.author} saying “${mr.message}”`
+    const report = `Reporting ${mr.message.author} saying:\n${mr.message}`
     console.log(`**EMOJI REPORT** from ${name(user)} in ${name(mr.message.channel)}: ${report}`)
     await mr.remove(user)
-    await server.moderation.send(`@here **EMOJI REPORT** from ${user} in ${mr.message.channel}: ${report}`, {split: true})
+    let embed
+    const files = mr.message.attachments.map(_ => new Discord.Attachment(_.url, _.filename))
+    if (files.length) {
+      embed = new Discord.RichEmbed({author: mr.message.author})
+      if (mr.message.attachments) embed.attachFiles(files)
+    }
+    await server.moderation.send(`@here **EMOJI REPORT** from ${user} in ${mr.message.channel}: ${report}`, {split: true, embed})
     return Promise.all([
       mr.message.react(server.emoji.report),
-      sendDM(user, `Report in ${mr.message.channel} has been sent to moderators: ${report}`)
+      sendDM(user, `Report in ${mr.message.channel} has been sent to moderators: ${report}`, {split: true, embed})
     ])
   }
 }
