@@ -64,7 +64,11 @@ const Commands = {
       console.log(`**REPORT** from ${name($.msg.author)} in ${name(chname)}: ${reason.join(' ')}`)
       if ($.server.deleteReports && $.msg.channel.name) $.msg.delete().catch(() => {})
       await $.server.moderation.send(`@here **REPORT** from ${$.msg.author} in ${chname}: ${reason.join(' ')}`)
-      return sendDM($.msg.author, `Report in ${chname} has been sent to moderators: ${reason.join(' ')}`).catch(() => {})
+      if ($.server.deleteReports && $.msg.channel.name) {
+        return sendDM($.msg.author, `Report in ${chname} has been sent to moderators: ${reason.join(' ')}`)
+      } else {
+        return $.msg.react($.msg.guild.emojis.find(_ => _.name === 'report'))
+      }
     }
   },
   'admin': {
@@ -73,10 +77,14 @@ const Commands = {
     filter: $ => $.server,
     action: async ($, {message}) => {
       const chname = ($.msg.channel && $.msg.channel.type !== 'dm') ? $.msg.channel : 'DM'
-      console.log(`Meessag eto admins from ${name($.msg.author)} in ${name(chname)}: ${message.join(' ')}`)
+      console.log(`Meessage to admins from ${name($.msg.author)} in ${name(chname)}: ${message.join(' ')}`)
       if ($.server.deleteReports && $.msg.channel.name) $.msg.delete().catch(() => {})
-      await $.server.moderation.send(`Admin message from ${$.msg.author} in ${chname}: ${message.join(' ')}`)
-      return sendDM($.msg.author, `Message to admins sent from ${chname}: ${message.join(' ')}`).catch(() => {})
+      await $.server.moderation.send(`Message to admins from ${$.msg.author} in ${chname}: ${message.join(' ')}`)
+      if ($.server.deleteReports && $.msg.channel.name) {
+        return sendDM($.msg.author, `Mesage to admins in ${chname} has been sent: ${message.join(' ')}`)
+      } else {
+        return $.msg.react('✅')
+      }
     }
   }
 }
