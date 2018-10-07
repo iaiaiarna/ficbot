@@ -227,6 +227,6 @@ function name (thing) {
 }
 
 async function sendDM (user, msg) {
-  const dm = user.dmChannel || user.createDM()
+  const dm = user.dmChannel || await user.createDM()
   return dm.send(msg)
 }
