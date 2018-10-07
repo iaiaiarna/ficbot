@@ -67,7 +67,8 @@ const Commands = {
       if ($.server.deleteReports && $.msg.channel.name) {
         return sendDM($.msg.author, `Report in ${chname} has been sent to moderators: ${reason.join(' ')}`)
       } else {
-        return $.msg.react($.msg.guild.emojis.find(_ => _.name === 'report'))
+        const guild = $.msg.guild || $.server.guild
+        return $.msg.react(guild.emojis.find(_ => _.name === 'report'))
       }
     }
   },
@@ -188,6 +189,7 @@ async function clientReady () {
       const server = conf.servers[guild.name]
       conf.serversById[guild.id] = server
       server.name = guild.name
+      server.guild = guild
       guild.channels.forEach(ch => {
         if (ch.name === server.channels.moderation) {
           server.moderation = ch
