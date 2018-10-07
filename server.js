@@ -179,5 +179,5 @@ function name (thing) {
 
 async function clientGuildMemberAdd (gm) {
   const server = conf.serversById[gm.guild.id]
-  await server.moderation.send(`Welcome to the server ${gm.user}! We are _so_ happy to see you! :heartpulse: Please check out the pinned message in this channel for the why's and whatfors of this server, plus our code of conduct!`)
+  await server.welcome.send(`Welcome to the server ${gm.user}! We are _so_ happy to see you! :heartpulse: Please check out the pinned message in this channel for the why's and whatfors of this server, plus our code of conduct!`)
 }
