@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict'
 require('@iarna/cli')(main)
 // These are yargs config for what goes on the commandline.
