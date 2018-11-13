@@ -47,8 +47,8 @@ const siteMatchers = [
 ]
 
 const DEFAULTS = {
-  fanficdb: `${__dirname}/Fanfic.json`,
-  substitutions: `${__dirname}/substitutions`
+  fanficdb: `./Fanfic.json`,
+  substitutions: `./substitutions`
 }
 
 let authors
@@ -106,7 +106,7 @@ async function reloadSubst (bot) {
 
 async function reloadDB (bot) {
   if (bot.conf.authors) {
-    db.authors = await require(bot.conf.authors)()
+    db.authors = await require(path.resolve(bot.conf.authors))()
   } else {
     db.authors = new Map()
   }
