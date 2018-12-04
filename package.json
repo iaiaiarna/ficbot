@@ -12,6 +12,7 @@
     "@perl/qw": "^1.0.1",
     "approximate-number": "^2.0.0",
     "css-parse": "^2.0.0",
+    "discord.js": "^11.4.2",
     "fetch-fic": "^3.8.3",
     "funstream": "^3.0.0",
     "ldjson-stream": "^1.2.1",

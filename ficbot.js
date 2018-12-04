@@ -10,18 +10,20 @@ const fs = require('fs')
 const qr = require('@perl/qr')
 const qw = require('@perl/qw')
 const TOML = require('@iarna/toml')
+const Discord = require('discord.js');
 const DiscoBot = require('@iarna/discobot')
+const moment = require('moment')
 const Fic = require('fetch-fic').Fic
 const Site = require('fetch-fic').Site
 const ficInflate = require('fetch-fic').ficInflate
-const fetch = use('fetch')
+const fetch = require('fetch-fic/util/fetch.js')
+const isFandom = require('./is-fandom.js')
 const fun = require('funstream')
 const ldjson = require('ldjson-stream')
 const uniq = require('./uniq.js')
 const path = require('path')
 const HTMLToMarkdown = require("./html-to-markdown.js")
 const approx = require('approximate-number');
-const moment = require('moment')
 
 const ratingColors = {
   'General Audiences': 0x00a000,
@@ -166,7 +168,7 @@ async function main (opts, conffile) {
   await bot.login()
 }
 
-async function truncate (str, len) {
+function truncate (str, len) {
   if (str.length <= len) return str
   return str.slice(0,len-1) + '…'
 }
@@ -222,6 +224,12 @@ async function expandAuthor ($, au) {
     }
     return true
   }
+}
+
+function nicelist (arr) {
+  if (arr.length === 1) return arr[0]
+  const last = arr.slice(-1)
+  return arr.slice(0, -1).join(', ') + ' and ' + last
 }
 
 async function expandURL ($, cmdline) {
@@ -370,4 +378,78 @@ function tag (list, prefix) {
 }
 function tags (list, prefix) {
   return list.filter(_ => qr`^${prefix}:`.test(_)).map(_ => _.slice(prefix.length + 1))
+}
+
+function linkSite (link) {
+  let cat = 'link'
+  if (/spacebattles/.test(link)) {
+    cat = 'SB'
+  } else if (/sufficientvelocity/.test(link)) {
+    cat = 'SV'
+  } else if (/questionablequesting/.test(link)) {
+    cat = 'QQ'
+  } else if (/archiveofourown/.test(link)) {
+    cat = 'AO3'
+  } else if (/fanfiction.net/.test(link)) {
+    cat = 'FF'
+  } else if (/wattpad/.test(link)) {
+    cat = 'wattpad'
+  }
+  return cat
+}
+
+function tagify (thing, ...linkSets) {
+  if (!thing) thing = ''
+  for (let links of linkSets) {
+    for (let link of Object.keys(links).sort((a, b) => b.length - a.length)) {
+      let linkre = qr.g`(^|\b|\W)(${link})((?:\b\W|$)(?:[^<]*$|[^<]*<[^/]))`
+      thing = thing.replace(linkre,
+        (str, m1, m2, m3) => m1 + makeLink(m2, shortlink(links[link])) + m3)
+    }
+  }
+  return thing
+}
+function makeLink (label, href) {
+  return `[${label}](${href})`
+}
+function shortlink (link) {
+  return xenlink(link)
+//               .replace(/^https:/, '')
+}
+function xenlink (link) {
+  return link.replace(/[/]threads[/].*#post-(\d+)/, '/posts/$1')
+             .replace(/[/]threads[/](?:[^.]+[.])?(\d+)/, '/threads/$1')
+             .replace(/[/]members[/](?:[^.]+[.])?(\d+)[/]?/, '/members/$1')
+             .replace(/[/]works[/](\d+)[/]chapters[/]\d+[/]?$/, '/works/$1')
+             .replace(/[/]$/, '')
+             .replace(/forum.question/, 'question')
+             .replace(/[/]fanfiction[.]net/, '/www.fiction.net')
+             .replace(/[/]s[/](\d+)([/]\d+)?(?:[/].*)?$/, '/s/$1$2')
+             .replace(/forums.sufficientvelocity/, 'sufficientvelocity')
+}
+function relativeDate (updated) {
+  updated = moment(updated)
+  const updatedStr = updated.isSameOrAfter(moment().subtract(7, 'day'))
+                   ? updated.format('ddd [at] h a [UTC]')
+                   : updated.isSameOrAfter(moment().subtract(1, 'year'))
+                   ? updated.format('Do MMM')
+                   : updated.format('Do MMM, Y')
+  return updatedStr
+}
+function cstr (chapters, chapterPrefix) {
+  return numof(chapters, 'chapter', 'chapters', chapterPrefix)
+}
+function numof (things, kind, kinds, prefix) {
+  const pre = things && prefix ? `${prefix} ` : ''
+  if (things === 1) {
+    return `${things} ${pre}${kind}`
+  } else {
+    return `${things} ${pre}${kinds}`
+  }
+}
+function strify (things, ...links) {
+  return linkUp(things, links).join(', ')
+}
+function linkUp (things, links) {
+  return (things||[]).map(thing => tagify(thing, ...links))
 }
